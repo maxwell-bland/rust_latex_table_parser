@@ -57,6 +57,24 @@ pub fn parse_tabular(tabular_tokens: &Vec<Token>) -> Vec<Vec<String>> {
             Token::CharTokens(char_tokens) => {
                 col.push_str(&char_tokens.content);
             }
+            // Handle when the token is a group by extracting a MacroName from it
+            Token::Group(group) => {
+                let mut macro_name = String::new();
+                for token in group.tokens.iter() {
+                    match token {
+                        Token::Macro(macro_token) => {
+                            macro_name.push_str(&macro_token.name.content);
+                        }
+                        _ => (),
+                    }
+                }
+                // if the column is not empty, push it to the row
+                if !col.is_empty() {
+                    row.push(col);
+                    col = String::new();
+                }
+                col.push_str(&macro_name);
+            }
             _ => (),
         }
     }
