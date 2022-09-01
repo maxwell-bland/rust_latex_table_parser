@@ -28,11 +28,6 @@ pub fn get_environments(tokens: &Vec<Token>, matc: &str) -> Vec<Environment> {
 
 // function that parses out the row data from a tabular environemnt by splitting out each line
 // and columns
-// looks for Token: Macro { escape: Escape { pos: @10372 }, name: MacroName { pos: @10373, content: "\\" } }
-// to split the line
-// looks for Token: AlignmentTab { pos: @10374 } to split the columns
-// grabs the content from Token: Macro { escape: Escape { pos: @10348 }, name: MacroName { pos: @10349, content: "pgwavgpctnytnatlwxxibx" } }
-// (but ignores the pos values)
 pub fn parse_tabular(tabular_tokens: &Vec<Token>) -> Vec<Vec<String>> {
     // split tabular by MacroName { content: "\\" }
     let mut rows: Vec<Vec<String>> = Vec::new();
@@ -57,14 +52,16 @@ pub fn parse_tabular(tabular_tokens: &Vec<Token>) -> Vec<Vec<String>> {
             Token::CharTokens(char_tokens) => {
                 col.push_str(&char_tokens.content);
             }
-            // Handle when the token is a group by extracting a MacroName from it
             Token::Group(group) => {
                 let mut macro_name = String::new();
                 for token in group.tokens.iter() {
                     match token {
                         Token::Macro(macro_token) => {
                             macro_name.push_str(&macro_token.name.content);
-                        }
+                        },
+                        Token::CharTokens(char_tokens) => {
+                            macro_name.push_str(&char_tokens.content);
+                        },
                         _ => (),
                     }
                 }
@@ -74,7 +71,7 @@ pub fn parse_tabular(tabular_tokens: &Vec<Token>) -> Vec<Vec<String>> {
                     col = String::new();
                 }
                 col.push_str(&macro_name);
-            }
+            },
             _ => (),
         }
     }
